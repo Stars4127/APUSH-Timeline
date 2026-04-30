@@ -1,58 +1,138 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APUSH Quiz</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <nav>
+    <!-- NAV -->
+    <nav class="nav">
+        <span class="nav-brand">APUSH Study System</span>
         <a href="index.html">Timeline</a>
-        <a href="quiz.html">Quiz</a>
+        <a href="quiz.html" class="active">Quiz</a>
         <a href="chronology.html">Chronology</a>
     </nav>
 
-    <header>
-        <h1>Quiz</h1>
+    <!-- HEADER -->
+    <header class="page-header">
+        <div class="header-inner">
+            <div class="header-eyebrow">AP United States History</div>
+            <h1>Recall Quiz</h1>
+            <p class="header-sub">Given a year — identify the event. Immediate feedback on every answer.</p>
+        </div>
     </header>
 
-    <div class="container">
-        <div id="q"></div>
-        <div id="opts"></div>
-        <button onclick="next()">Next</button>
-    </div>
+    <!-- MAIN -->
+    <main class="main">
+        <div class="quiz-card anim" id="quiz-card">
+
+            <div class="quiz-prompt">What happened in…</div>
+            <div class="quiz-question" id="q-year">—</div>
+
+            <div class="quiz-options" id="q-opts"></div>
+
+            <div class="quiz-feedback" id="q-feedback"></div>
+
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <button class="btn btn-primary" id="next-btn" onclick="loadQuestion()" disabled>Next Question →</button>
+                <button class="btn btn-ghost" onclick="resetScore()">Reset Score</button>
+            </div>
+
+            <div class="quiz-score" id="q-score">Score: 0 / 0</div>
+        </div>
+    </main>
+
+    <footer>APUSH · Recall Quiz · AP United States History</footer>
 
     <script src="data.js"></script>
     <script>
-        let cur;
+        const LETTERS = ['A', 'B', 'C', 'D'];
+        let cur = null;
+        let answered = false;
+        let correct = 0, total = 0;
 
-        function load() {
+        function loadQuestion() {
+            answered = false;
+            document.getElementById('next-btn').disabled = true;
+            document.getElementById('q-feedback').textContent = '';
+
+            // Pick a random event
             cur = EVENTS[Math.floor(Math.random() * EVENTS.length)];
 
-            document.getElementById("q").innerText =
-                "What happened in " + cur.year + "?";
-
-            let opts = [cur.title];
-            while (opts.length < 4) {
-                let r = EVENTS[Math.floor(Math.random() * EVENTS.length)].title;
-                if (!opts.includes(r)) opts.push(r);
+            // Build 4 unique distractors
+            const pool = EVENTS.filter(e => e.title !== cur.title);
+            const distractors = [];
+            while (distractors.length < 3) {
+                const r = pool[Math.floor(Math.random() * pool.length)];
+                if (!distractors.find(d => d.title === r.title)) distractors.push(r);
             }
 
-            opts.sort(() => Math.random() - 0.5);
+            const options = [cur, ...distractors].sort(() => Math.random() - 0.5);
 
-            document.getElementById("opts").innerHTML =
-                opts.map(o => `<button class="option" onclick="check('${o}')">${o}</button>`).join("");
+            // Determine the period for color
+            const pColor = (PERIODS[cur.p] || {}).color || '#888';
+
+            document.getElementById('q-year').textContent = cur.year;
+            document.getElementById('q-year').style.color = pColor;
+
+            const optsEl = document.getElementById('q-opts');
+            optsEl.innerHTML = '';
+            options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerHTML = `<span class="opt-letter">${LETTERS[i]}</span>${opt.title}`;
+                btn.dataset.title = opt.title;
+                btn.onclick = () => checkAnswer(btn, opt);
+                optsEl.appendChild(btn);
+            });
         }
 
-        function check(o) {
-            alert(o === cur.title ? "Correct" : "Wrong");
+        function checkAnswer(clickedBtn, chosen) {
+            if (answered) return;
+            answered = true;
+            total++;
+
+            const isCorrect = chosen.title === cur.title;
+            if (isCorrect) correct++;
+
+            // Style all buttons
+            document.querySelectorAll('.opt-btn').forEach(btn => {
+                btn.disabled = true;
+                if (btn.dataset.title === cur.title) {
+                    btn.classList.add('correct');
+                } else if (btn === clickedBtn) {
+                    btn.classList.add('wrong');
+                }
+            });
+
+            const fb = document.getElementById('q-feedback');
+            if (isCorrect) {
+                fb.style.color = '#2a6a2a';
+                fb.textContent = '✓ Correct — ' + cur.desc;
+            } else {
+                fb.style.color = '#8a2020';
+                fb.textContent = '✗ Incorrect — the answer was ' + cur.title + '. ' + cur.desc;
+            }
+
+            document.getElementById('q-score').textContent =
+                `Score: ${correct} / ${total} (${Math.round(correct / total * 100)}%)`;
+
+            document.getElementById('next-btn').disabled = false;
         }
 
-        function next() { load() }
-        load();
+        function resetScore() {
+            correct = 0; total = 0;
+            document.getElementById('q-score').textContent = 'Score: 0 / 0';
+            loadQuestion();
+        }
+
+        loadQuestion();
     </script>
-
 </body>
 
 </html>

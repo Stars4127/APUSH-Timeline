@@ -1,70 +1,192 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APUSH Chronology</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <nav>
+    <!-- NAV -->
+    <nav class="nav">
+        <span class="nav-brand">APUSH Study System</span>
         <a href="index.html">Timeline</a>
         <a href="quiz.html">Quiz</a>
-        <a href="chronology.html">Chronology</a>
+        <a href="chronology.html" class="active">Chronology</a>
     </nav>
 
-    <header>
-        <h1>Chronology</h1>
+    <!-- HEADER -->
+    <header class="page-header">
+        <div class="header-inner">
+            <div class="header-eyebrow">AP United States History</div>
+            <h1>Chronological Order</h1>
+            <p class="header-sub">Drag events into correct order — years are hidden. Trains temporal sequencing for LEQ
+                reasoning.</p>
+        </div>
     </header>
 
-    <div class="container">
-        <div id="list"></div>
-        <button onclick="check()">Check</button>
-        <button onclick="shuffle()">Shuffle</button>
-    </div>
+    <!-- MAIN -->
+    <main class="main">
+
+        <p class="chrono-instructions" id="instructions">
+            Arrange the events below from <em>earliest to latest</em>. Drag to reorder, then click <strong>Check
+                Order</strong>.
+        </p>
+
+        <div class="chrono-list" id="chrono-list"></div>
+
+        <div class="chrono-result" id="result"></div>
+
+        <div class="chrono-actions">
+            <button class="btn btn-primary" onclick="check()">Check Order</button>
+            <button class="btn btn-secondary" onclick="newSet()">New Set</button>
+            <button class="btn btn-ghost" onclick="reveal()">Reveal Years</button>
+        </div>
+
+    </main>
+
+    <footer>APUSH · Chronology · AP United States History</footer>
 
     <script src="data.js"></script>
     <script>
         let set = [];
+        let revealed = false;
+        let dragSrc = null;
 
-        function shuffle() {
-            set = [...EVENTS].sort(() => Math.random() - 0.5).slice(0, 6);
+        const PCOLORS = Object.fromEntries(
+            Object.entries(PERIODS).map(([k, v]) => [k, v.color])
+        );
+
+        function newSet() {
+            revealed = false;
+            const pool = [...EVENTS].sort(() => Math.random() - 0.5).slice(0, 7);
+            // shuffle so they're NOT in order
+            set = pool.sort(() => Math.random() - 0.5);
+            document.getElementById('result').textContent = '';
             render();
         }
 
         function render() {
-            document.getElementById("list").innerHTML =
-                set.map(e => `
-      <div class="list-item" data-year="${e.year}" draggable="true">
-        ${e.title}
-      </div>
-    `).join("");
+            const list = document.getElementById('chrono-list');
+            list.innerHTML = '';
 
-            enableDrag();
+            set.forEach((e, i) => {
+                const item = document.createElement('div');
+                item.className = 'chrono-item';
+                item.draggable = true;
+                item.dataset.idx = i;
+
+                const periodColor = PCOLORS[e.p] || '#888';
+
+                item.innerHTML = `
+      <span class="drag-handle">⠿</span>
+      <span class="chrono-num">${i + 1}</span>
+      <span class="chrono-name">${e.title}${revealed ? ' <em style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--ink-3);font-style:normal;">(${e.year})</em>' : ''}</span>
+      <span class="chrono-period-dot" style="background:${periodColor}" title="Period ${e.p}"></span>
+    `;
+
+                // Drag events
+                item.addEventListener('dragstart', onDragStart);
+                item.addEventListener('dragover', onDragOver);
+                item.addEventListener('drop', onDrop);
+                item.addEventListener('dragend', onDragEnd);
+                item.addEventListener('dragleave', onDragLeave);
+
+                list.appendChild(item);
+            });
         }
 
-        function enableDrag() {
-            let dragged;
-            document.querySelectorAll(".list-item").forEach(el => {
-                el.ondragstart = () => dragged = el;
-                el.ondragover = e => e.preventDefault();
-                el.ondrop = () => el.parentNode.insertBefore(dragged, el);
+        function onDragStart(e) {
+            dragSrc = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', this.dataset.idx);
+        }
+
+        function onDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (this !== dragSrc) this.classList.add('drag-over');
+        }
+
+        function onDragLeave() {
+            this.classList.remove('drag-over');
+        }
+
+        function onDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            if (this === dragSrc) return;
+
+            const fromIdx = +dragSrc.dataset.idx;
+            const toIdx = +this.dataset.idx;
+
+            // Reorder set array
+            const moved = set.splice(fromIdx, 1)[0];
+            set.splice(toIdx, 0, moved);
+
+            // Clear any result styling
+            document.getElementById('result').textContent = '';
+            render();
+        }
+
+        function onDragEnd() {
+            document.querySelectorAll('.chrono-item').forEach(el => {
+                el.classList.remove('dragging', 'drag-over');
             });
         }
 
         function check() {
-            let arr = [...document.querySelectorAll(".list-item")]
-                .map(x => +x.dataset.year);
+            const items = [...document.querySelectorAll('.chrono-item')];
+            const years = items.map(el => {
+                const idx = +el.dataset.idx;
+                return set[idx] ? set[idx].year : 0;
+            });
 
-            let sorted = [...arr].sort((a, b) => a - b);
+            // The set array is already reordered by drag, so just get years in current order
+            const currentYears = set.map(e => e.year);
+            const sortedYears = [...currentYears].sort((a, b) => a - b);
 
-            alert(JSON.stringify(arr) === JSON.stringify(sorted)
-                ? "Correct" : "Wrong order");
+            const isCorrect = JSON.stringify(currentYears) === JSON.stringify(sortedYears);
+
+            const resultEl = document.getElementById('result');
+
+            // Color individual items
+            const listItems = document.querySelectorAll('.chrono-item');
+            listItems.forEach((el, i) => {
+                el.classList.remove('correct-item', 'wrong-item');
+                if (currentYears[i] === sortedYears[i]) {
+                    el.classList.add('correct-item');
+                } else {
+                    el.classList.add('wrong-item');
+                }
+            });
+
+            if (isCorrect) {
+                resultEl.style.color = '#2a6a2a';
+                resultEl.textContent = '✓ Correct! All events are in chronological order.';
+            } else {
+                // Count how many are in right position
+                const rightCount = currentYears.filter((y, i) => y === sortedYears[i]).length;
+                resultEl.style.color = '#8a2020';
+                resultEl.textContent = `✗ Not quite — ${rightCount} of ${set.length} events are in the right position. Try again or reveal years.`;
+            }
         }
 
-        shuffle();
-    </script>
+        function reveal() {
+            revealed = true;
+            render();
 
+            // Re-apply result colors if any
+            const resultEl = document.getElementById('result');
+            if (resultEl.textContent) check();
+        }
+
+        newSet();
+    </script>
 </body>
 
 </html>

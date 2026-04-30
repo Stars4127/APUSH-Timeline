@@ -1,61 +1,205 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APUSH Timeline</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <nav>
-    <a href="index.html">Timeline</a>
+  <!-- NAV -->
+  <nav class="nav">
+    <span class="nav-brand">APUSH Study System</span>
+    <a href="index.html" class="active">Timeline</a>
     <a href="quiz.html">Quiz</a>
     <a href="chronology.html">Chronology</a>
   </nav>
 
-  <header>
-    <h1>APUSH Timeline</h1>
+  <!-- HEADER -->
+  <header class="page-header">
+    <div class="header-inner">
+      <div class="header-eyebrow">AP United States History</div>
+      <h1>The American Timeline</h1>
+      <p class="header-sub">9 periods · all major events · click any card for exam context</p>
+      <div class="period-pills" id="period-pills"></div>
+    </div>
   </header>
 
-  <div class="container timeline" id="out"></div>
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="search-wrap">
+      <svg class="search-icon" width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.4" />
+        <path d="M9 9L12 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+      </svg>
+      <input class="search-input" id="srch" type="text" placeholder="Search events…" oninput="render()">
+    </div>
+    <div class="ctrl-sep"></div>
+    <span class="ctrl-label">Theme</span>
+    <button class="tag-btn on" data-t="all" onclick="setTag(this)">All</button>
+    <button class="tag-btn" data-t="politics" onclick="setTag(this)">Politics</button>
+    <button class="tag-btn" data-t="economy" onclick="setTag(this)">Economy</button>
+    <button class="tag-btn" data-t="society" onclick="setTag(this)">Society</button>
+    <button class="tag-btn" data-t="conflict" onclick="setTag(this)">Conflict</button>
+    <button class="tag-btn" data-t="expansion" onclick="setTag(this)">Expansion</button>
+    <span class="count-pill" id="count"></span>
+  </div>
 
-  <div class="overlay" id="overlay">
-    <div class="modal">
-      <h3 id="m-title"></h3>
-      <p id="m-desc"></p>
-      <button onclick="closeModal()">Close</button>
+  <!-- TIMELINE -->
+  <main class="main">
+    <div class="timeline" id="tl">
+      <div class="tl-spine"></div>
+    </div>
+  </main>
+
+  <!-- MODAL -->
+  <div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="modal">
+      <div class="modal-bar" id="m-bar"></div>
+      <div class="modal-body">
+        <button class="modal-close" onclick="closeModal()">×</button>
+        <div class="modal-year" id="m-yr"></div>
+        <div class="modal-title" id="m-title"></div>
+        <div class="modal-desc" id="m-desc"></div>
+        <div class="modal-conn">
+          <strong>APUSH Connection</strong>
+          <span id="m-conn"></span>
+        </div>
+      </div>
     </div>
   </div>
 
+  <footer>APUSH · 9 Periods · AP United States History Study System</footer>
+
   <script src="data.js"></script>
   <script>
-    const out = document.getElementById("out");
+    const TC = {
+      politics: { bg: 'var(--tag-politics-bg)', tx: 'var(--tag-politics-tx)' },
+      economy: { bg: 'var(--tag-economy-bg)', tx: 'var(--tag-economy-tx)' },
+      society: { bg: 'var(--tag-society-bg)', tx: 'var(--tag-society-tx)' },
+      conflict: { bg: 'var(--tag-conflict-bg)', tx: 'var(--tag-conflict-tx)' },
+      expansion: { bg: 'var(--tag-expansion-bg)', tx: 'var(--tag-expansion-tx)' },
+    };
 
+    // group events by period in order
+    const BY_PERIOD = {};
     EVENTS.forEach(e => {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.dataset.p = e.p;
-
-      div.innerHTML = `
-    <div class="year">${e.year}</div>
-    <div class="title">${e.title}</div>
-    <div class="tag">period ${e.p}</div>
-  `;
-
-      div.onclick = () => {
-        document.getElementById("m-title").innerText = e.title;
-        document.getElementById("m-desc").innerText = e.desc;
-        document.getElementById("overlay").classList.add("open");
-      };
-
-      out.appendChild(div);
+      if (!BY_PERIOD[e.p]) BY_PERIOD[e.p] = [];
+      BY_PERIOD[e.p].push(e);
     });
 
-    function closeModal() {
-      document.getElementById("overlay").classList.remove("open");
-    }
-  </script>
+    let activeTag = 'all', activePid = null;
 
+    // Build header period pills
+    function buildPills() {
+      const c = document.getElementById('period-pills');
+      Object.keys(PERIODS).forEach(pid => {
+        const p = PERIODS[pid];
+        const btn = document.createElement('button');
+        btn.className = 'period-pill';
+        btn.textContent = `P${pid} · ${p.dates}`;
+        btn.dataset.pid = pid;
+        btn.onclick = () => {
+          activePid = (activePid == pid) ? null : +pid;
+          document.querySelectorAll('.period-pill').forEach(b =>
+            b.classList.toggle('on', +b.dataset.pid === activePid));
+          render();
+        };
+        c.appendChild(btn);
+      });
+    }
+
+    function render() {
+      const tl = document.getElementById('tl');
+      // keep spine, remove old blocks
+      const spine = tl.querySelector('.tl-spine');
+      tl.innerHTML = '';
+      tl.appendChild(spine);
+
+      const q = document.getElementById('srch').value.toLowerCase().trim();
+      let total = 0;
+
+      Object.keys(PERIODS).forEach((pid, pi) => {
+        const p = PERIODS[pid];
+        const events = (BY_PERIOD[pid] || []).filter(e => {
+          const tagOk = activeTag === 'all' || e.tag === activeTag;
+          const pidOk = activePid === null || activePid == pid;
+          const srchOk = !q || e.title.toLowerCase().includes(q) || e.desc.toLowerCase().includes(q) || String(e.year).includes(q);
+          return tagOk && pidOk && srchOk;
+        });
+        if (!events.length) return;
+        total += events.length;
+
+        const block = document.createElement('div');
+        block.className = 'period-block anim';
+        block.style.animationDelay = (pi * .04) + 's';
+
+        const head = document.createElement('div');
+        head.className = 'period-header';
+        head.innerHTML = `
+      <div class="period-dot" style="background:${p.color}"></div>
+      <span class="period-label">Period ${pid}</span>
+      <span class="period-dates">${p.dates}</span>
+      <span class="period-theme">— ${p.theme}</span>
+    `;
+        block.appendChild(head);
+
+        const list = document.createElement('div');
+        list.className = 'ev-list';
+
+        events.sort((a, b) => a.year - b.year).forEach(e => {
+          const tc = TC[e.tag] || { bg: '#eee', tx: '#555' };
+          const card = document.createElement('div');
+          card.className = 'ev-card';
+          card.innerHTML = `
+        <span class="ev-year">${e.year}</span>
+        <span class="ev-name">${e.title}</span>
+        <span class="ev-tag" style="background:${tc.bg};color:${tc.tx}">${e.tag}</span>
+      `;
+          card.onclick = () => openModal(e, p.color);
+          list.appendChild(card);
+        });
+
+        block.appendChild(list);
+        tl.appendChild(block);
+      });
+
+      if (!total) {
+        const em = document.createElement('div');
+        em.className = 'empty-state';
+        em.textContent = 'No events match your search or filters.';
+        tl.appendChild(em);
+      }
+      document.getElementById('count').textContent = total + ' event' + (total === 1 ? '' : 's');
+    }
+
+    function setTag(el) {
+      activeTag = el.dataset.t;
+      document.querySelectorAll('.tag-btn').forEach(b => b.classList.toggle('on', b.dataset.t === activeTag));
+      render();
+    }
+
+    function openModal(e, color) {
+      document.getElementById('m-bar').style.background = color;
+      document.getElementById('m-yr').textContent = e.year;
+      document.getElementById('m-title').textContent = e.title;
+      document.getElementById('m-desc').textContent = e.desc;
+      document.getElementById('m-conn').textContent = e.conn;
+      document.getElementById('overlay').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('overlay').classList.remove('open');
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    buildPills();
+    render();
+  </script>
 </body>
 
 </html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <nav>
+        <a href="index.html">Timeline</a>
+        <a href="quiz.html">Quiz</a>
+        <a href="chronology.html">Chronology</a>
+    </nav>
+
+    <header>
+        <h1>APUSH Quiz</h1>
+    </header>
+
+    <div class="container">
+        <div id="q"></div>
+        <div id="opts"></div>
+        <button onclick="next()">Next</button>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        let current;
+
+        function load() {
+            current = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+
+            document.getElementById("q").innerHTML =
+                "What happened in " + current.year + "?";
+
+            let opts = [current.title];
+
+            while (opts.length < 4) {
+                let r = EVENTS[Math.floor(Math.random() * EVENTS.length)].title;
+                if (!opts.includes(r)) opts.push(r);
+            }
+
+            opts.sort(() => Math.random() - 0.5);
+
+            document.getElementById("opts").innerHTML =
+                opts.map(o =>
+                    `<button class="option" onclick="check('${o}')">${o}</button>`
+                ).join("");
+        }
+
+        function check(o) {
+            alert(o === current.title ? "Correct" : "Wrong: " + current.title);
+        }
+
+        function next() { load() }
+        load();
+    </script>
+
+</body>
+
+</html>

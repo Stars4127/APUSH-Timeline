@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <nav>
+        <a href="index.html">Timeline</a>
+        <a href="quiz.html">Quiz</a>
+        <a href="chronology.html">Chronology</a>
+    </nav>
+
+    <header>
+        <h1>Chronology Game</h1>
+    </header>
+
+    <div class="container">
+        <p>Arrange these in order (drag manually not implemented, click compare version):</p>
+        <div id="list"></div>
+        <button onclick="check()">Check Order</button>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        let set = EVENTS.sort(() => Math.random() - 0.5).slice(0, 5);
+
+        function render() {
+            document.getElementById("list").innerHTML =
+                set.map((e, i) =>
+                    `<div class="list-item" data-year="${e.year}" onclick="move(this)">
+        ${e.year} — ${e.title}
+      </div>`
+                ).join("");
+        }
+
+        function move(el) {
+            el.parentNode.appendChild(el);
+        }
+
+        function check() {
+            let arr = [...document.querySelectorAll(".list-item")]
+                .map(x => +x.dataset.year);
+
+            let sorted = [...arr].sort((a, b) => a - b);
+
+            alert(JSON.stringify(arr) === JSON.stringify(sorted)
+                ? "Correct order"
+                : "Incorrect");
+        }
+
+        render();
+    </script>
+
+</body>
+
+</html>

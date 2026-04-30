@@ -14,30 +14,42 @@
     </nav>
 
     <header>
-        <h1>Chronology Game</h1>
+        <h1>Chronology</h1>
     </header>
 
     <div class="container">
-        <p>Arrange these in order (drag manually not implemented, click compare version):</p>
         <div id="list"></div>
-        <button onclick="check()">Check Order</button>
+        <button onclick="check()">Check</button>
+        <button onclick="shuffle()">Shuffle</button>
     </div>
 
     <script src="data.js"></script>
     <script>
-        let set = EVENTS.sort(() => Math.random() - 0.5).slice(0, 5);
+        let set = [];
+
+        function shuffle() {
+            set = [...EVENTS].sort(() => Math.random() - 0.5).slice(0, 6);
+            render();
+        }
 
         function render() {
             document.getElementById("list").innerHTML =
-                set.map((e, i) =>
-                    `<div class="list-item" data-year="${e.year}" onclick="move(this)">
-        ${e.year} — ${e.title}
-      </div>`
-                ).join("");
+                set.map(e => `
+      <div class="list-item" data-year="${e.year}" draggable="true">
+        ${e.title}
+      </div>
+    `).join("");
+
+            enableDrag();
         }
 
-        function move(el) {
-            el.parentNode.appendChild(el);
+        function enableDrag() {
+            let dragged;
+            document.querySelectorAll(".list-item").forEach(el => {
+                el.ondragstart = () => dragged = el;
+                el.ondragover = e => e.preventDefault();
+                el.ondrop = () => el.parentNode.insertBefore(dragged, el);
+            });
         }
 
         function check() {
@@ -47,11 +59,10 @@
             let sorted = [...arr].sort((a, b) => a - b);
 
             alert(JSON.stringify(arr) === JSON.stringify(sorted)
-                ? "Correct order"
-                : "Incorrect");
+                ? "Correct" : "Wrong order");
         }
 
-        render();
+        shuffle();
     </script>
 
 </body>

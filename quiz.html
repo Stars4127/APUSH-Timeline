@@ -14,7 +14,7 @@
     </nav>
 
     <header>
-        <h1>APUSH Quiz</h1>
+        <h1>Quiz</h1>
     </header>
 
     <div class="container">
@@ -25,16 +25,15 @@
 
     <script src="data.js"></script>
     <script>
-        let current;
+        let cur;
 
         function load() {
-            current = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+            cur = EVENTS[Math.floor(Math.random() * EVENTS.length)];
 
-            document.getElementById("q").innerHTML =
-                "What happened in " + current.year + "?";
+            document.getElementById("q").innerText =
+                "What happened in " + cur.year + "?";
 
-            let opts = [current.title];
-
+            let opts = [cur.title];
             while (opts.length < 4) {
                 let r = EVENTS[Math.floor(Math.random() * EVENTS.length)].title;
                 if (!opts.includes(r)) opts.push(r);
@@ -43,13 +42,11 @@
             opts.sort(() => Math.random() - 0.5);
 
             document.getElementById("opts").innerHTML =
-                opts.map(o =>
-                    `<button class="option" onclick="check('${o}')">${o}</button>`
-                ).join("");
+                opts.map(o => `<button class="option" onclick="check('${o}')">${o}</button>`).join("");
         }
 
         function check(o) {
-            alert(o === current.title ? "Correct" : "Wrong: " + current.title);
+            alert(o === cur.title ? "Correct" : "Wrong");
         }
 
         function next() { load() }

@@ -4,12 +4,19 @@
     --text: #1a1510;
     --muted: #6b5e4a;
     --border: rgba(60, 50, 30, 0.15);
-    --border-strong: rgba(60, 50, 30, 0.3);
     --accent: #c04a1a;
-    --gold: #a07830;
+
+    --p1: #6b5bb8;
+    --p2: #1d8a68;
+    --p3: #c04a1a;
+    --p4: #2676c0;
+    --p5: #b84068;
+    --p6: #4a8a18;
+    --p7: #a06018;
+    --p8: #4a38a0;
+    --p9: #2a6828;
 }
 
-/* RESET */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -17,27 +24,23 @@
 }
 
 body {
-    font-family: "DM Sans", system-ui, sans-serif;
+    font-family: "DM Sans", sans-serif;
     background: var(--bg);
     color: var(--text);
-    line-height: 1.6;
 }
 
-/* NAV (restored dark academic bar) */
 nav {
     position: sticky;
     top: 0;
-    z-index: 100;
     background: #1a1510;
-    color: var(--bg);
+    color: white;
     display: flex;
     gap: 16px;
-    padding: 12px 20px;
-    font-size: 13px;
+    padding: 12px 18px;
 }
 
 nav a {
-    color: var(--bg);
+    color: white;
     text-decoration: none;
     opacity: .75;
 }
@@ -46,41 +49,91 @@ nav a:hover {
     opacity: 1
 }
 
-/* HEADER (old parchment academic feel) */
 header {
+    padding: 30px 20px;
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 28px 20px;
 }
 
 header h1 {
     font-family: "Playfair Display", serif;
-    font-size: 32px;
-    letter-spacing: -.02em;
+    font-size: 34px;
 }
 
-/* LAYOUT */
 .container {
-    max-width: 900px;
+    max-width: 920px;
     margin: auto;
-    padding: 22px;
+    padding: 24px;
 }
 
-/* CARDS (restored depth + hover lift) */
+/* timeline */
+.timeline {
+    position: relative;
+    padding-left: 42px;
+}
+
+.timeline::before {
+    content: "";
+    position: absolute;
+    left: 18px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(var(--p1), var(--p2), var(--p3), var(--p4),
+            var(--p5), var(--p6), var(--p7), var(--p8), var(--p9));
+    opacity: .35;
+}
+
 .card {
+    position: relative;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 14px 16px;
-    margin: 10px 0;
+    padding: 14px;
+    margin: 12px 0;
+    cursor: pointer;
     transition: .15s;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
 }
 
 .card:hover {
-    transform: translateY(-2px);
-    border-color: var(--border-strong);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    transform: translateX(4px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .08);
+}
+
+.card::before {
+    content: "";
+    position: absolute;
+    left: -30px;
+    top: 18px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px var(--border);
+}
+
+.card[data-p="3"]::before {
+    background: var(--p3)
+}
+
+.card[data-p="4"]::before {
+    background: var(--p4)
+}
+
+.card[data-p="5"]::before {
+    background: var(--p5)
+}
+
+.card[data-p="6"]::before {
+    background: var(--p6)
+}
+
+.card[data-p="7"]::before {
+    background: var(--p7)
+}
+
+.card[data-p="8"]::before {
+    background: var(--p8)
 }
 
 .year {
@@ -90,66 +143,48 @@ header h1 {
 }
 
 .title {
-    font-size: 15px;
     font-weight: 600;
-    margin-top: 2px;
 }
 
 .tag {
-    display: inline-block;
-    margin-top: 6px;
-    font-size: 11px;
-    font-family: "DM Mono", monospace;
-    color: var(--accent);
-    letter-spacing: .05em;
+    font-size: 10px;
     text-transform: uppercase;
+    color: var(--accent);
 }
 
-/* QUIZ UI (clean but warm) */
-button {
-    font-family: inherit;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-strong);
+/* modal */
+.overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .4);
+    align-items: center;
+    justify-content: center;
+}
+
+.overlay.open {
+    display: flex
+}
+
+.modal {
     background: var(--surface);
-    cursor: pointer;
-    transition: .15s;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 400px;
 }
 
-button:hover {
-    border-color: var(--accent);
-    transform: translateY(-1px);
-}
-
+/* quiz */
 .option {
     display: block;
-    width: 100%;
-    text-align: left;
     margin: 8px 0;
 }
 
-/* CHRONOLOGY ITEMS */
+/* chronology */
 .list-item {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
+    padding: 10px;
     margin: 6px 0;
+    border-radius: 8px;
     cursor: grab;
-    transition: .15s;
-}
-
-.list-item:hover {
-    border-color: var(--border-strong);
-    transform: translateX(2px);
-}
-
-/* TYPOGRAPHY IMPROVEMENTS */
-h1,
-h2 {
-    font-family: "Playfair Display", serif;
-}
-
-p {
-    color: var(--muted);
 }

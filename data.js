@@ -1,55 +1,39 @@
 const EVENTS = [
-    { year: 1492, title: "Columbus arrives in Americas", tag: "expansion" },
-    { year: 1607, title: "Jamestown founded", tag: "expansion" },
-    { year: 1620, title: "Mayflower Compact", tag: "politics" },
-    { year: 1676, title: "Bacon's Rebellion", tag: "conflict" },
-    { year: 1754, title: "French & Indian War begins", tag: "conflict" },
+    { year: 1775, title: "Lexington and Concord", p: 3, desc: "First battles of Revolutionary War" },
+    { year: 1776, title: "Declaration of Independence", p: 3, desc: "Colonies declare independence" },
+    { year: 1787, title: "Constitution", p: 3, desc: "Framework of US government" },
 
-    { year: 1775, title: "Lexington and Concord", tag: "conflict" },
-    { year: 1776, title: "Declaration of Independence", tag: "politics" },
-    { year: 1787, title: "Constitutional Convention", tag: "politics" },
+    { year: 1812, title: "War of 1812", p: 4, desc: "War with Britain, confirms independence" },
+    { year: 1820, title: "Missouri Compromise", p: 4, desc: "Balance slave/free states" },
+    { year: 1831, title: "Nat Turner's Rebellion", p: 4, desc: "Major slave revolt" },
+    { year: 1845, title: "Manifest Destiny", p: 4, desc: "Belief in expansion west" },
+    { year: 1848, title: "Treaty of Guadalupe Hidalgo", p: 4, desc: "Ends Mexican War" },
 
-    { year: 1812, title: "War of 1812", tag: "conflict" },
-    { year: 1820, title: "Missouri Compromise", tag: "politics" },
-    { year: 1828, title: "Tariff of Abominations", tag: "economy" },
-    { year: 1830, title: "Indian Removal Act", tag: "politics" },
-    { year: 1848, title: "Treaty of Guadalupe Hidalgo", tag: "expansion" },
+    { year: 1850, title: "Compromise of 1850", p: 5, desc: "Temporary sectional peace" },
+    { year: 1854, title: "Bleeding Kansas", p: 5, desc: "Violence over slavery" },
+    { year: 1859, title: "Harpers Ferry Raid", p: 5, desc: "John Brown uprising" },
+    { year: 1860, title: "Election of Lincoln", p: 5, desc: "Triggers secession" },
+    { year: 1861, title: "Civil War begins", p: 5, desc: "Union vs Confederacy" },
+    { year: 1863, title: "Gettysburg", p: 5, desc: "Turning point battle" },
+    { year: 1865, title: "Appomattox", p: 5, desc: "War ends" },
+    { year: 1877, title: "Compromise of 1877", p: 5, desc: "Ends Reconstruction" },
 
-    { year: 1850, title: "Compromise of 1850", tag: "politics" },
-    { year: 1854, title: "Kansas-Nebraska Act", tag: "conflict" },
-    { year: 1859, title: "Harpers Ferry Raid", tag: "conflict" },
-    { year: 1860, title: "Lincoln elected", tag: "politics" },
+    { year: 1870, title: "Bessemer Process", p: 6, desc: "Steel production boom" },
+    { year: 1880, title: "Knights of Labor / AFL", p: 6, desc: "Labor unions rise" },
+    { year: 1889, title: "Gospel of Wealth", p: 6, desc: "Carnegie wealth theory" },
 
-    { year: 1861, title: "Civil War begins", tag: "conflict" },
-    { year: 1862, title: "Antietam / Bull Run battles", tag: "conflict" },
-    { year: 1863, title: "Gettysburg + Emancipation shift", tag: "conflict" },
-    { year: 1865, title: "Appomattox / Civil War ends", tag: "conflict" },
-    { year: 1865, title: "13th Amendment", tag: "politics" },
+    { year: 1898, title: "Imperialism (Hawaii, Philippines)", p: 7, desc: "US becomes empire" },
+    { year: 1919, title: "Prohibition begins", p: 7, desc: "Alcohol banned" },
+    { year: 1933, title: "Prohibition ends", p: 7, desc: "Repealed" },
+    { year: 1945, title: "End of Pacific Theater", p: 7, desc: "WWII ends in Pacific" },
 
-    { year: 1869, title: "Transcontinental Railroad", tag: "economy" },
-    { year: 1877, title: "End of Reconstruction", tag: "politics" },
+    { year: 1949, title: "USSR gets nukes", p: 8, desc: "Cold War escalation" },
+    { year: 1949, title: "NATO formed", p: 8, desc: "Military alliance" },
+    { year: 1948, title: "Berlin Airlift", p: 8, desc: "US supplies West Berlin" },
+    { year: 1960, title: "Rise of Black Militancy", p: 8, desc: "More radical civil rights" },
+    { year: 1969, title: "Gay Rights Movement", p: 8, desc: "Stonewall uprising" },
 
-    { year: 1898, title: "Spanish-American War / Hawaii annexed", tag: "expansion" },
-
-    { year: 1917, title: "US enters WWI", tag: "conflict" },
-    { year: 1920, title: "19th Amendment", tag: "politics" },
-    { year: 1929, title: "Great Depression begins", tag: "economy" },
-
-    { year: 1941, title: "Pearl Harbor / WWII", tag: "conflict" },
-    { year: 1945, title: "End of WWII", tag: "conflict" },
-
-    { year: 1948, title: "Berlin Airlift", tag: "conflict" },
-    { year: 1949, title: "NATO + USSR nukes", tag: "conflict" },
-
-    { year: 1954, title: "Brown v Board", tag: "politics" },
-    { year: 1964, title: "Civil Rights Act", tag: "politics" },
-    { year: 1969, title: "Gay Rights movement begins (Stonewall)", tag: "society" },
-
-    { year: 1975, title: "Vietnam War ends", tag: "conflict" },
-    { year: 1980, title: "Reagan elected", tag: "politics" },
-    { year: 1991, title: "Cold War ends", tag: "politics" },
-
-    { year: 2001, title: "9/11 attacks", tag: "conflict" },
-    { year: 2008, title: "Financial Crisis", tag: "economy" },
-    { year: 2021, title: "Afghanistan withdrawal", tag: "conflict" }
+    { year: 1965, title: "Vietnam War escalation", p: 8, desc: "US increases troops" },
+    { year: 1950, title: "Korean War", p: 8, desc: "Cold War conflict" },
+    { year: 2001, title: "Afghanistan War", p: 9, desc: "War on terror begins" }
 ];
